@@ -5,7 +5,7 @@ Add the focus block storage adapter and unit tests for localStorage loading, sav
 
 ## Completed
 - [x] Replace starter project identity and sample UI references so the app no longer presents itself as the pairing starter.
-- [x] Add pure timer helpers and unit tests for formatting and progress.
+- [x] Add timer configuration, pure timer helpers, and unit tests for formatting and progress.
 
 ## Remaining
 - [ ] Add the focus block storage adapter and unit tests for localStorage loading, saving, invalid data fallback, day total lookup, and completed-block increments.

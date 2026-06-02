@@ -1,8 +1,14 @@
-export const DURATION_OPTIONS = [10, 20, 30]
-export const DEFAULT_DURATION_MINUTES = 20
+import {
+  DEFAULT_FOCUS_DURATION_MINUTES,
+  FOCUS_DURATION_OPTIONS_MINUTES,
+  SECONDS_PER_MINUTE,
+} from './focusTimerConfig.js'
+
+export const DURATION_OPTIONS = FOCUS_DURATION_OPTIONS_MINUTES
+export const DEFAULT_DURATION_MINUTES = DEFAULT_FOCUS_DURATION_MINUTES
 
 export function minutesToSeconds(minutes) {
-  return Math.max(0, Math.floor(minutes * 60))
+  return Math.max(0, Math.floor(minutes * SECONDS_PER_MINUTE))
 }
 
 export function formatTime(totalSeconds) {

@@ -2,12 +2,13 @@
 
 ## 1. Solution summary
 
-Build a single-screen React focus timer that runs entirely in the browser. Keep timer UI and session state in `App.jsx`, move small calculation helpers into a pure utility module, and route completed-block persistence through a tiny client-side storage adapter so the app does not call the localStorage API directly. Use the existing Vite/Vitest setup, no new dependencies, and add focused unit/component coverage for the critical timer and storage flows.
+Build a single-screen React focus timer that runs entirely in the browser. Keep timer UI and session state in `App.jsx`, centralize approved timer settings in a small configuration module, move calculation helpers into a pure utility module, and route completed-block persistence through a tiny client-side storage adapter so the app does not call the localStorage API directly. Use the existing Vite/Vitest setup, no new dependencies, and add focused unit/component coverage for the critical timer and storage flows.
 
 ## 2. Component and file plan
 
 - `src/App.jsx`: Replace the starter content with the focus timer experience, including duration selection, timer controls, progress display, completion state, daily total, and current-day selector.
-- `src/timerLogic.js`: Create pure helpers for duration constants, time formatting, progress calculation, day-key handling, and daily total updates.
+- `src/focusTimerConfig.js`: Create the single source for approved focus duration options, default duration, and shared time constants.
+- `src/timerLogic.js`: Create pure helpers for minute conversion, time formatting, and progress calculation using values from `focusTimerConfig.js`.
 - `src/focusBlockStore.js`: Create a small persistence adapter for completed focus block totals with `loadCompletedBlocks`, `saveCompletedBlocks`, `getCompletedBlocksForDay`, and `recordCompletedBlock`; MVP implementation uses localStorage internally.
 - `src/styles.css`: Replace the starter styling with the approved responsive mechanical/instrument-panel visual system.
 - `src/test/timerLogic.test.js`: Add focused unit tests for non-trivial timer and daily-total helpers.
@@ -19,14 +20,27 @@ Build a single-screen React focus timer that runs entirely in the browser. Keep 
 Use local state in `App.jsx`; no global store is needed.
 
 ```js
-const DURATION_OPTIONS = [10, 20, 30]
+import {
+  DEFAULT_FOCUS_DURATION_MINUTES,
+  FOCUS_DURATION_OPTIONS_MINUTES,
+} from './focusTimerConfig.js'
 
-const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(20)
-const [remainingSeconds, setRemainingSeconds] = useState(20 * 60)
+const [selectedDurationMinutes, setSelectedDurationMinutes] = useState(
+  DEFAULT_FOCUS_DURATION_MINUTES,
+)
+const [remainingSeconds, setRemainingSeconds] = useState(
+  minutesToSeconds(DEFAULT_FOCUS_DURATION_MINUTES),
+)
 const [timerStatus, setTimerStatus] = useState('ready')
 const [selectedDay, setSelectedDay] = useState(getTodayKey())
 const [completedBlocksByDay, setCompletedBlocksByDay] = useState({})
 ```
+
+Configuration:
+
+- `FOCUS_DURATION_OPTIONS_MINUTES`: approved duration presets.
+- `DEFAULT_FOCUS_DURATION_MINUTES`: default selected duration.
+- `SECONDS_PER_MINUTE`: shared conversion constant for timer math.
 
 `timerStatus` values:
 
@@ -62,7 +76,8 @@ const focusBlockStore = {
 
 Derived values:
 
-- `totalSeconds`: `selectedDurationMinutes * 60`.
+- `durationOptions`: `FOCUS_DURATION_OPTIONS_MINUTES`.
+- `totalSeconds`: `minutesToSeconds(selectedDurationMinutes)`.
 - `elapsedSeconds`: `totalSeconds - remainingSeconds`.
 - `progressPercent`: elapsed progress from 0 to 100.
 - `displayTime`: formatted `MM:SS` countdown.
@@ -84,7 +99,7 @@ Derived values:
 ## 5. Implementation sequence
 
 1. Replace starter project identity and sample UI references so the app no longer presents itself as the pairing starter.
-2. Add pure timer helpers and unit tests for formatting and progress.
+2. Add timer configuration, pure timer helpers, and unit tests for formatting and progress.
 3. Add the focus block storage adapter and unit tests for localStorage loading, saving, invalid data fallback, day total lookup, and completed-block increments.
 4. Build the core timer state in `App.jsx`: duration presets, countdown status, start/pause/resume/reset behavior, and one-time completion counting through the storage adapter.
 5. Add the current-day selector used to validate per-day counts.
@@ -96,7 +111,7 @@ Derived values:
 ## 6. Validation plan
 
 - Default load shows 20 minutes selected, `20:00` remaining, a ready state, and today's completed block total.
-- Unit tests cover time formatting and progress calculation.
+- Unit tests cover timer configuration usage, time formatting, and progress calculation.
 - Storage adapter tests cover localStorage read/write, day total lookup, invalid stored data fallback, and completed-block increment behavior.
 - Component tests cover the main timer behavior through user-facing controls and text, using fake timers where needed for countdown completion.
 - The user can choose 10, 20, or 30 minutes before starting, and the displayed time updates accordingly.

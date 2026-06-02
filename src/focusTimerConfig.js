@@ -1,0 +1,3 @@
+export const FOCUS_DURATION_OPTIONS_MINUTES = Object.freeze([10, 20, 30])
+export const DEFAULT_FOCUS_DURATION_MINUTES = 20
+export const SECONDS_PER_MINUTE = 60
