@@ -1,13 +1,13 @@
 # Project status
 
 ## Current step
-Add pure timer helpers and unit tests for formatting and progress.
+Add the focus block storage adapter and unit tests for localStorage loading, saving, invalid data fallback, day total lookup, and completed-block increments.
 
 ## Completed
 - [x] Replace starter project identity and sample UI references so the app no longer presents itself as the pairing starter.
+- [x] Add pure timer helpers and unit tests for formatting and progress.
 
 ## Remaining
-- [ ] Add pure timer helpers and unit tests for formatting and progress.
 - [ ] Add the focus block storage adapter and unit tests for localStorage loading, saving, invalid data fallback, day total lookup, and completed-block increments.
 - [ ] Build the core timer state in `App.jsx`: duration presets, countdown status, start/pause/resume/reset behavior, and one-time completion counting through the storage adapter.
 - [ ] Add the current-day selector used to validate per-day counts.
