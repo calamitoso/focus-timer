@@ -41,6 +41,8 @@ Configuration:
 - `FOCUS_DURATION_OPTIONS_MINUTES`: approved duration presets.
 - `DEFAULT_FOCUS_DURATION_MINUTES`: default selected duration.
 - `SECONDS_PER_MINUTE`: shared conversion constant for timer math.
+- `DEFAULT_TIMER_TICK_INTERVAL_MS`: real-time timer tick interval.
+- `getTimerTickIntervalMs`: returns the active tick interval, allowing `?tickMs=16.67` for roughly 60x manual verification and `VITE_TIMER_TICK_INTERVAL_MS` for automated verification.
 
 `timerStatus` values:
 
@@ -91,7 +93,7 @@ Derived values:
 - Pause: Changes status from `running` to `paused` and preserves the current remaining time.
 - Resume: Changes status from `paused` to `running` without changing remaining time.
 - Reset: Changes status to `ready`, restores remaining time to the selected duration, and does not increment the completed block total.
-- Timer tick: While running, decrements remaining time until it reaches zero.
+- Timer tick: While running, decrements remaining time until it reaches zero. The default tick is real time, but verification can speed this up with a config override without changing focus durations.
 - Complete session: When remaining time reaches zero, changes status to `completed`, records the completed block through the storage adapter, and updates the selected day's completed block count exactly once.
 - Change current day: Updates `selectedDay`, displays that day's stored total, and resets the visible timer to a ready state so the test selector does not create ambiguous in-progress sessions across days.
 - Refresh or reopen: Loads completed block totals through the storage adapter and shows the selected day total, defaulting the selected day to the user's current local day.
@@ -111,7 +113,7 @@ Derived values:
 ## 6. Validation plan
 
 - Default load shows 20 minutes selected, `20:00` remaining, a ready state, and today's completed block total.
-- Unit tests cover timer configuration usage, time formatting, and progress calculation.
+- Unit tests cover timer configuration usage, tick interval overrides, time formatting, and progress calculation.
 - Storage adapter tests cover localStorage read/write, day total lookup, invalid stored data fallback, and completed-block increment behavior.
 - Component tests cover the main timer behavior through user-facing controls and text, using fake timers where needed for countdown completion.
 - The user can choose 10, 20, or 30 minutes before starting, and the displayed time updates accordingly.
