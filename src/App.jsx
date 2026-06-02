@@ -28,7 +28,7 @@ function App() {
     minutesToSeconds(DEFAULT_FOCUS_DURATION_MINUTES),
   )
   const [timerStatus, setTimerStatus] = useState('ready')
-  const [selectedDay] = useState(getTodayKey)
+  const [selectedDay, setSelectedDay] = useState(getTodayKey)
   const [completedBlocksByDay, setCompletedBlocksByDay] = useState(() =>
     loadCompletedBlocks(),
   )
@@ -42,6 +42,7 @@ function App() {
     [selectedDurationMinutes],
   )
   const progressPercent = getProgressPercent(totalSeconds, remainingSeconds)
+  const roundedProgressPercent = Math.round(progressPercent)
   const completedBlocksForSelectedDay = getCompletedBlocksForDay(
     completedBlocksByDay,
     selectedDay,
@@ -50,6 +51,17 @@ function App() {
   const isPaused = timerStatus === 'paused'
   const isCompleted = timerStatus === 'completed'
   const canReset = timerStatus !== 'ready' || remainingSeconds !== totalSeconds
+  const statusLabel = {
+    ready: 'Ready',
+    running: 'Running',
+    paused: 'Paused',
+    completed: 'Completed',
+  }[timerStatus]
+  const primaryActionLabel = isPaused
+    ? 'Resume'
+    : isCompleted
+      ? 'Start next focus block'
+      : 'Start'
 
   useEffect(() => {
     completedBlocksRef.current = completedBlocksByDay
@@ -114,6 +126,15 @@ function App() {
     setTimerStatus('ready')
   }
 
+  function handleDayChange(event) {
+    const nextDay = event.target.value || getTodayKey()
+
+    setSelectedDay(nextDay)
+    setRemainingSeconds(totalSeconds)
+    setTimerStatus('ready')
+    completionRecordedRef.current = false
+  }
+
   return (
     <main className="app-shell">
       <section className="hero" aria-labelledby="page-title">
@@ -125,34 +146,60 @@ function App() {
         </p>
       </section>
 
-      <section className="placeholder" aria-labelledby="timer-title">
-        <h2 id="timer-title">Session timer</h2>
+      <section className="timer-panel" aria-labelledby="timer-title">
+        <header>
+          <p className="eyebrow">Work block</p>
+          <h2 id="timer-title">Session timer</h2>
+        </header>
 
-        <fieldset>
-          <legend>Work duration</legend>
-          {FOCUS_DURATION_OPTIONS_MINUTES.map((durationMinutes) => (
-            <button
-              aria-pressed={selectedDurationMinutes === durationMinutes}
-              disabled={isRunning}
-              key={durationMinutes}
-              onClick={() => handleDurationSelect(durationMinutes)}
-              type="button"
+        <form aria-label="Focus timer settings">
+          <fieldset disabled={isRunning}>
+            <legend>Work duration</legend>
+            {FOCUS_DURATION_OPTIONS_MINUTES.map((durationMinutes) => (
+              <button
+                aria-label={`${durationMinutes} minute focus duration`}
+                aria-pressed={selectedDurationMinutes === durationMinutes}
+                key={durationMinutes}
+                onClick={() => handleDurationSelect(durationMinutes)}
+                type="button"
             >
               {durationMinutes} min
+              {selectedDurationMinutes === durationMinutes ? ' selected' : ''}
             </button>
           ))}
-        </fieldset>
+          </fieldset>
+        </form>
 
-        <p aria-live="polite">
-          <strong>{formatTime(remainingSeconds)}</strong>
-        </p>
-        <p>Status: {timerStatus}</p>
-        <p>Progress: {Math.round(progressPercent)}%</p>
+        <section aria-labelledby="countdown-title" aria-live="polite">
+          <h3 id="countdown-title">Time remaining</h3>
+          <time
+            aria-label={`${formatTime(remainingSeconds)} remaining`}
+            dateTime={`PT${remainingSeconds}S`}
+          >
+            {formatTime(remainingSeconds)}
+          </time>
+          <p>
+            Status: <strong>{statusLabel}</strong>
+          </p>
+          {isCompleted && (
+            <p role="status">
+              Focus block complete. The selected day total has been updated.
+            </p>
+          )}
+        </section>
 
-        <div>
+        <section aria-labelledby="progress-title">
+          <h3 id="progress-title">Progress</h3>
+          <progress max="100" value={roundedProgressPercent}>
+            {roundedProgressPercent}%
+          </progress>
+          <p>{roundedProgressPercent}% elapsed</p>
+        </section>
+
+        <div aria-label="Timer controls" role="group">
           {!isRunning && (
             <button onClick={handleStart} type="button">
-              {isPaused ? 'Resume' : 'Start'}
+              {primaryActionLabel}
             </button>
           )}
           {isRunning && (
@@ -165,10 +212,28 @@ function App() {
           </button>
         </div>
 
-        <p>
-          Completed focus blocks today:{' '}
-          <strong>{completedBlocksForSelectedDay}</strong>
-        </p>
+        <aside aria-labelledby="daily-total-title">
+          <h3 id="daily-total-title">Daily total</h3>
+          <p>
+            Completed focus blocks for <time dateTime={selectedDay}>{selectedDay}</time>:{' '}
+            <strong>{completedBlocksForSelectedDay}</strong>
+          </p>
+        </aside>
+
+        <section aria-labelledby="testing-title">
+          <h3 id="testing-title">Testing day</h3>
+          <p id="testing-day-help">
+            Change the selected day to verify that totals are tracked separately.
+          </p>
+          <label htmlFor="selected-day">Current day for testing</label>
+          <input
+            aria-describedby="testing-day-help"
+            id="selected-day"
+            onChange={handleDayChange}
+            type="date"
+            value={selectedDay}
+          />
+        </section>
       </section>
     </main>
   )
